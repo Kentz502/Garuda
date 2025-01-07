@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Wizard;
+use Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -86,7 +87,17 @@ class FlightResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('flight_number'),
+                Tables\Columns\TextColumn::make('airline.name'),
+                Tables\Columns\TextColumn::make('segments')
+                    ->label('Route & Duration')
+                    ->formatStateUsing(function (Flight $record): string {
+                        $firstSegment = $record->segments->first();
+                        $lastSegment = $record->segments->last();
+                        $route = $firstSegment->airport->name . ' - ' . $lastSegment->airport->iata_code;
+                        $duration = (new \DateTime($firstSegment->time))->format('d F Y H:i') . ' - ' . (new \DateTime($lastSegment->time))->format('d F Y H:i');
+                        return $route . ' | ' . $duration;
+                    })
             ])
             ->filters([
                 //
